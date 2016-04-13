@@ -97,6 +97,11 @@ char lblock4[3][2] = {
   {0,6}
 };
 
+char oblock1[2][2] = {
+  {7,7},
+  {7,7}
+};
+
 
 void main(void) {
   /* put your own code here */
