@@ -179,7 +179,7 @@ void initboard(void)
   
 }
 
-int checkcollision()
+int checkcollision(void)
 {
   int collision = 0;
   
