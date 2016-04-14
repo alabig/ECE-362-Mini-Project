@@ -5,6 +5,8 @@ char x, y, size;
 char row, col;
 char ** currentpiece;
 
+char gameboard[20][10];
+
 char iblock[4][4][4] = {
 {  
   {0,0,0,0},
@@ -169,8 +171,6 @@ char oblock[4][3][3] = {
   {7,7,0}
 }
 };
-
-char gameboard[20][10];
 
 void initboard(void)
 {
