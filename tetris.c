@@ -1,7 +1,8 @@
 #include <hidef.h>      /* common defines and macros */
 #include "derivative.h"      /* derivative-specific definitions */
 
-char x, y;
+char x, y, size;
+char ** currentpiece;
 
 char iblock[4][4][4] = {
 {  
@@ -53,7 +54,7 @@ char tblock[4][3][3] = {
 }
 };
 
-char zblock1[4][3][3] = {
+char zblock[4][3][3] = {
 {  
   {3,3,0},
   {0,3,3},
@@ -76,7 +77,7 @@ char zblock1[4][3][3] = {
 }
 };
 
-char sblock1[4][3][3] = {
+char sblock[4][3][3] = {
 {  
   {0,4,4},
   {4,4,0},
@@ -99,7 +100,7 @@ char sblock1[4][3][3] = {
 }
 };
 
-char jblock1[4][3][3] = {
+char jblock[4][3][3] = {
 {  
   {5,0,0},
   {5,5,5},
@@ -122,7 +123,7 @@ char jblock1[4][3][3] = {
 }
 };
 
-char lblock1[4][3][3] = {
+char lblock[4][3][3] = {
 {  
   {0,0,6},
   {6,6,6},
@@ -145,7 +146,7 @@ char lblock1[4][3][3] = {
 }
 };
 
-char oblock1[4][3][3] = {
+char oblock[4][3][3] = {
 {
   {7,7,0},
   {7,7,0},
@@ -173,16 +174,25 @@ char gameboard[20][10];
 void initboard(void)
 {
   for (y = 0;y < 20;y++)
-    for (x = 0;x < 10;x++) gameboard[y][x] = 0;
+    for (x = 0;x < 10;x++) gameboard[x][y] = 0;
   
 }
 
-typedef struct currentpiece {
-  char key[2];  // x and y coordinates of key
-  char rotations;
-  char position[4];
-} block;
+int checkcollision()
+{
+  int collision = 0;
   
+  for (x = 0; x < size; x++)
+  {
+    for (y = 0; y < size; y++)
+    {
+      if (currentpiece[x][y])
+        if ((x < 0) || (x > 9) || (gameboard[x][y])) collision = 1;
+    }
+  }
+    
+  return collision;
+}
 
 void main(void) {
   /* put your own code here */
