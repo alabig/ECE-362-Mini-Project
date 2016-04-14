@@ -2,6 +2,7 @@
 #include "derivative.h"      /* derivative-specific definitions */
 
 char x, y, size;
+char row, col;
 char ** currentpiece;
 
 char iblock[4][4][4] = {
@@ -174,7 +175,7 @@ char gameboard[20][10];
 void initboard(void)
 {
   for (y = 0;y < 20;y++)
-    for (x = 0;x < 10;x++) gameboard[x][y] = 0;
+    for (x = 0;x < 10;x++) gameboard[y][x] = 0;
   
 }
 
@@ -182,12 +183,12 @@ int checkcollision()
 {
   int collision = 0;
   
-  for (x = 0; x < size; x++)
+  for (y = 0; y < size; y++)
   {
-    for (y = 0; y < size; y++)
+    for (x = 0; x < size; x++)
     {
-      if (currentpiece[x][y])
-        if ((x < 0) || (x > 9) || (gameboard[x][y])) collision = 1;
+      if (currentpiece[y][x])
+        if ((col + x < 0) || (col + x > 9) || (row + y < 0) || (gameboard[row + y][col + x])) collision = 1;
     }
   }
     
