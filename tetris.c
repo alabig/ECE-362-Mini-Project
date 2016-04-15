@@ -230,7 +230,9 @@ void main(void) {
  	EnableInterrupts;
 
   for(;;) {
-    
+
+  while (!gameover)
+  {
     if (tick)
     {
       tick = 0;
@@ -250,7 +252,6 @@ void main(void) {
       else
       {
         row--;
-        
         if (checkcollision())
         {
           row++;
@@ -260,6 +261,48 @@ void main(void) {
         updatedisp();
       }
     }
+    
+    if (left)
+    {
+      col--;
+      if (checkcollision()) col++;
+      else updatedisp();
+    }
+    else if (right)
+    {
+      col++;
+      if (checkcollision()) col--;
+      else updatedisp();
+    }
+    else if (clockwise)
+    {
+      //update current piece
+      if (checkcollision())  //undo update
+      else updatedisp();
+    }
+    else if (cclockwise)
+    {
+      //update current piece
+      if (checkcollision())  //undo update
+      else updatedisp();
+    }
+    else if (down)
+    {
+      row--;
+      if (checkcollision())
+      {
+        row++;
+        roundover = 1;
+      }
+      else updatedisp();
+    }
+    else if (up)  // drop piece
+    {
+      do row--;
+      while (!checkcollision())
+      row++;
+      updatedisp();
+  }
   
     _FEED_COP(); /* feeds the dog */
   }/* loop forever */
@@ -277,6 +320,12 @@ interrupt 15 void TIM_ISR(void)
  	TFLG1 = TFLG1 | 0x80; // clear TIM CH 7 interrupt flag 
  	
  	timcnt++;
- 	if (timcnt == (10 - level)) tick = 1; 	   	  
+ 	if (timcnt == (10 - level))
+ 	{
+ 	  timcnt = 0;
+ 	  tick = 1;
+ 	}
  	
 }
+
+
