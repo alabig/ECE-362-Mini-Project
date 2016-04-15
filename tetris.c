@@ -14,6 +14,8 @@ char ** currentpiece;
 char tick, timcnt, level;
 char roundover, gameover;
 
+char up, down, left, right, clockwise, cclockwise;
+
 char gameboard[NUMROWS][NUMCOLS];
 
 char iblock[4][4][4] = {
@@ -277,13 +279,15 @@ void main(void) {
     else if (clockwise)
     {
       //update current piece
-      if (checkcollision())  //undo update
+      if (checkcollision()){
+      }//undo update
       else updatedisp();
     }
     else if (cclockwise)
     {
       //update current piece
-      if (checkcollision())  //undo update
+      if (checkcollision()){
+      }//undo update
       else updatedisp();
     }
     else if (down)
@@ -299,10 +303,11 @@ void main(void) {
     else if (up)  // drop piece
     {
       do row--;
-      while (!checkcollision())
+      while (!checkcollision());
       row++;
       roundover = 1;
       updatedisp();
+    }
   }
   
     _FEED_COP(); /* feeds the dog */
