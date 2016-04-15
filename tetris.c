@@ -301,6 +301,7 @@ void main(void) {
       do row--;
       while (!checkcollision())
       row++;
+      roundover = 1;
       updatedisp();
   }
   
