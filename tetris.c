@@ -7,8 +7,9 @@
 #define NUMROWS 23  // 3 extra rows to allow movement as piece appears
 #define NUMCOLS 10
 
-char x, y, size;
+char x, y, size, rot;
 char row, col;
+char *** shape;
 char ** currentpiece;
 
 char tick, timcnt, level;
@@ -279,13 +280,25 @@ void main(void) {
     else if (clockwise)
     {
       //update current piece
-      if (checkcollision()) {}//undo update
+      if (++rot > 3) rot = 0;
+      currentpiece = shape[rot];
+      if (checkcollision()) //undo update
+      {
+        if (--rot < 0) rot = 3;
+        currentpiece = shape[rot];
+      }
       else updatedisp();
     }
     else if (cclockwise)
     {
       //update current piece
-      if (checkcollision()) {}//undo update
+      if (--rot < 0) rot = 3;
+      currentpiece = shape[rot];
+      if (checkcollision()) //undo update
+      {
+        if (++rot > 3) rot = 0;
+        currentpiece = shape[rot];
+      }
       else updatedisp();
     }
     else if (down)
@@ -331,3 +344,5 @@ interrupt 15 void TIM_ISR(void)
  	}
  	
 }
+
+
