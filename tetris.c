@@ -279,15 +279,13 @@ void main(void) {
     else if (clockwise)
     {
       //update current piece
-      if (checkcollision()){
-      }//undo update
+      if (checkcollision()) {}//undo update
       else updatedisp();
     }
     else if (cclockwise)
     {
       //update current piece
-      if (checkcollision()){
-      }//undo update
+      if (checkcollision()) {}//undo update
       else updatedisp();
     }
     else if (down)
@@ -333,5 +331,3 @@ interrupt 15 void TIM_ISR(void)
  	}
  	
 }
-
-
