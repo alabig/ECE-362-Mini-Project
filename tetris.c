@@ -7,15 +7,19 @@
 #define NUMROWS 23  // 3 extra rows to allow movement as piece appears
 #define NUMCOLS 10
 
+#define NUMPIECES 7
+
 char x, y, size, rot;
 char row, col;
-char *** shape;
+char *** block;
 char ** currentpiece;
 
 char tick, timcnt, level;
 char roundover, gameover;
 
 char up, down, left, right, clockwise, cclockwise;
+
+char n;
 
 char gameboard[NUMROWS][NUMCOLS];
 
@@ -223,9 +227,23 @@ int checkcollision(void)
   return collision;
 }
 
+void clearpiece(void)
+{
+  for (y = 0; y < size; y++)
+    for (x = 0; x < size; x++)
+      if (currentpiece[size - 1 - y][x]) gameboard[row + y][col + x] = 0;
+}
+
+void setpiece(void)
+{
+  for (y = 0; y < size; y++)
+    for (x = 0; x < size; x++)
+      if (currentpiece[size - 1 - y][x]) gameboard[row + y][col + x] = 1;
+}
+
 void updatedisp(void)
 {
-  // update game board and display
+  // probably will become an interrupt - update game board and display
 }
 
 void main(void) {
@@ -244,7 +262,24 @@ void main(void) {
       {
         roundover = 0;
         
-        // set new piece as currentpiece
+        n = (char)(rand() % (NUMPIECES-1)); // set new piece as currentpiece
+        switch (n)
+        {
+          case 0:  block = iblock;
+          break;
+          case 1:  block = tblock;
+          break;
+          case 2:  block = zblock;
+          break;
+          case 3:  block = sblock;
+          break;
+          case 4:  block = jblock;
+          break;
+          case 5:  block = lblock;
+          break;
+          case 6:  block = oblock;
+        }
+        
         // reset row and col for new piece
         row = NUMROWS - 4;
         col = NUMCOLS - 7;
@@ -260,8 +295,14 @@ void main(void) {
           row++;
           roundover = 1;
         }
-      
-        updatedisp();
+        else
+        {
+          row++;
+          clearpiece();
+          row--;
+          setpiece();
+          updatedisp();
+        }
       }
     }
     
@@ -269,37 +310,56 @@ void main(void) {
     {
       col--;
       if (checkcollision()) col++;
-      else updatedisp();
+      else
+      {
+        col++;
+        clearpiece();
+        col--;
+        setpiece();
+      }
     }
     else if (right)
     {
       col++;
       if (checkcollision()) col--;
-      else updatedisp();
+      else
+      {
+        col--;
+        clearpiece();
+        col++;
+        setpiece();
+      }
     }
     else if (clockwise)
     {
-      //update current piece
-      if (++rot > 3) rot = 0;
-      currentpiece = shape[rot];
+      rot = (char)(++rot % 4);  //update current piece
+      currentpiece = block[rot];
       if (checkcollision()) //undo update
       {
-        if (--rot < 0) rot = 3;
-        currentpiece = shape[rot];
+        (char)(rot = --rot % 4);
+        currentpiece = block[rot];
       }
-      else updatedisp();
+      else
+      {
+        rot = (char)(--rot % 4);
+        currentpiece = block[rot];
+        clearpiece();
+        rot = (char)(++rot % 4);
+        currentpiece = block[rot];
+        setpiece();
+      }
     }
     else if (cclockwise)
     {
-      //update current piece
-      if (--rot < 0) rot = 3;
-      currentpiece = shape[rot];
+      clearpiece();
+      rot = (char)(--rot % 4);  //update current piece
+      currentpiece = block[rot];
       if (checkcollision()) //undo update
       {
-        if (++rot > 3) rot = 0;
-        currentpiece = shape[rot];
+        rot = (char)(++rot % 4);
+        currentpiece = block[rot];
       }
-      else updatedisp();
+      setpiece();
     }
     else if (down)
     {
@@ -309,15 +369,22 @@ void main(void) {
         row++;
         roundover = 1;
       }
-      else updatedisp();
+      else
+      {
+        row++;
+        clearpiece();
+        row--;
+        setpiece();
+      }
     }
     else if (up)  // drop piece
     {
+      clearpiece();
       do row--;
       while (!checkcollision());
       row++;
       roundover = 1;
-      updatedisp();
+      setpiece();
     }
   }
   
@@ -344,5 +411,3 @@ interrupt 15 void TIM_ISR(void)
  	}
  	
 }
-
-
