@@ -78,16 +78,17 @@ void main(void) {
 	initializations(); 		  			 		  		
 	EnableInterrupts;
 
-  for(;;) {
-
+  //for(;;) {
+  
   /* write your code here */
   
-  /*lcdwait();            // wait for (at least <>) 30 cycles for SPI data to shift out  
+  /*
+  lcdwait();            // wait for (at least <>) 30 cycles for SPI data to shift out  
   // start frame
-  shiftout(0);
-  shiftout(0);
-  shiftout(0);
-  shiftout(0);
+  shiftout(0x00);
+  shiftout(0x00);
+  shiftout(0x00);
+  shiftout(0x00);
   
   // LED frame
   shiftout(0xFF);  // brightness
@@ -95,14 +96,19 @@ void main(void) {
   shiftout(0x00);  // green
   shiftout(0x00);  // red
     
-  for (i=0;i<59;i++)  // blank frames
-    shiftout(0);
+  for (i=0;i<29;i++)  // blank frames
+  {
+    shiftout(0xE0);
+    shiftout(0x00);
+    shiftout(0x00);
+    shiftout(0x00);
+  }
     
   // end frame for 60 LEDs
-  shiftout(0);
-  shiftout(0);
-  shiftout(0);
-  shiftout(0);
+  shiftout(0x00);
+  shiftout(0x00);
+  //shiftout(0x00);
+  //shiftout(0x00);
   */
   
   PTT_PTT1 = 0; // start frame
@@ -112,8 +118,36 @@ void main(void) {
     PTT_PTT0 = 0;
   }
   
-  for (j=0;j<60;j++)
+  for (j=0;j<30;j++)
   {
+    PTT_PTT1 = 1; //  brightness
+    for (i=0;i<8;i++)
+    {
+      PTT_PTT0 = 1;
+      PTT_PTT0 = 0;
+    }
+    
+    PTT_PTT1 = 0;
+    for (i=0;i<8;i++) // blue
+    {
+      PTT_PTT0 = 1;
+      PTT_PTT0 = 0;
+    }
+    
+    PTT_PTT1 = 0;
+    for (i=0;i<8;i++) // green
+    {
+      PTT_PTT0 = 1;
+      PTT_PTT0 = 0;
+    }
+    
+    PTT_PTT1 = 1;
+    for (i=0;i<8;i++) // red
+    {
+      PTT_PTT0 = 1;
+      PTT_PTT0 = 0;
+    }
+
     PTT_PTT1 = 1; //  brightness
     for (i=0;i<8;i++)
     {
@@ -153,17 +187,17 @@ void main(void) {
     }
   }
     
-  }/* loop forever */
+  //}/* loop forever */
 }/* do not leave main */
 
-/*
-***********************************************************************
+
+/***********************************************************************
   shiftout: Transmits the character x to external shift 
             register using the SPI.  It should shift MSB first.  
              
             MOSI = PM[4]
             SCK  = PM[5]
-***********************************************************************
+***********************************************************************/
 
 void shiftout(char x)
 
@@ -175,9 +209,9 @@ void shiftout(char x)
 }
 
 
-***********************************************************************
+/***********************************************************************
   lcdwait: Delay for approx 2 ms
-***********************************************************************
+***********************************************************************/
 void lcdwait()
 {
   int m = 5;
@@ -194,4 +228,3 @@ void lcdwait()
     m--;
   }
 }
-*/
