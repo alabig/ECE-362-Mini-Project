@@ -32,16 +32,12 @@ void  initializations(void) {
 /* Disable watchdog timer (COPCTL register) */
   COPCTL = 0x40;   //COP off, RTI and COP stopped in BDM-mode
 
-/* Initialize SPI for baud rate of 6 Mbs
+/* Initialize SPI for baud rate of 6 Mbs */
   DDRM   = 0xFF;
   SPICR1 = 0x50;
   SPICR2 = 0x00;
   SPIBR  = 0x01;
-*/
 
-/* Initialize the LCD */  
-//  lcdwait();      // wait for 2ms so that the LCD can wake up   
-  
 }
 	 		  			 		  		
 /***********************************************************************
