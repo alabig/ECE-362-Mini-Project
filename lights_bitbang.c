@@ -78,39 +78,6 @@ void main(void) {
 	initializations(); 		  			 		  		
 	EnableInterrupts;
 
-  //for(;;) {
-  
-  /* write your code here */
-  
-  /*
-  lcdwait();            // wait for (at least <>) 30 cycles for SPI data to shift out  
-  // start frame
-  shiftout(0x00);
-  shiftout(0x00);
-  shiftout(0x00);
-  shiftout(0x00);
-  
-  // LED frame
-  shiftout(0xFF);  // brightness
-  shiftout(0xFF);  // blue
-  shiftout(0x00);  // green
-  shiftout(0x00);  // red
-    
-  for (i=0;i<29;i++)  // blank frames
-  {
-    shiftout(0xE0);
-    shiftout(0x00);
-    shiftout(0x00);
-    shiftout(0x00);
-  }
-    
-  // end frame for 60 LEDs
-  shiftout(0x00);
-  shiftout(0x00);
-  //shiftout(0x00);
-  //shiftout(0x00);
-  */
-  
   PTT_PTT1 = 0; // start frame
   for (i=0;i<32;i++)
   {
@@ -186,8 +153,7 @@ void main(void) {
       PTT_PTT0 = 0;
     }
   }
-    
-  //}/* loop forever */
+  
 }/* do not leave main */
 
 
