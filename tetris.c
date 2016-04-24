@@ -299,7 +299,7 @@ void updatedisp(void) // update LED data
   for (x = 0;x < NUMCOLS; x++)
     for (y = 0;y < (NUMROWS - 3); y++)
     {
-      if (y = rclear[] && flash)
+      if (flash && ((y = rclear[0]) || (y = rclear[1]) || (y = rclear[2]) || (y = rclear[3])))
       {
         red = 255;    // white
         green = 255;
