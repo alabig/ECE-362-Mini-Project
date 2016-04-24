@@ -9,11 +9,11 @@
 
 #define NUMPIECES 7
 
-char x, y, size, rot;
+void shiftout(char x);
+
+char x, y, z, size, rot;
 char row, col;
 char emptyrow;
-char *** block;
-char ** currentpiece;
 
 char tick, timcnt, level;
 char roundover, gameover;
@@ -27,171 +27,168 @@ unsigned char red, green, blue; // RGB values (0-255)
 char rclear[4] = {0,0,0,0};  // rows to clear
 
 char gameboard[NUMROWS][NUMCOLS];
+char currentpiece[4][4][4];
 
 int score, highscore;
 
-char iblock[4][4][4] = {
-{  
-  {0,0,0,0},
-  {0,0,0,0},
-  {1,1,1,1},
-  {0,0,0,0}
+char block[7][4][4][4] = {
+{ // iblock([0])
+  {  
+    {0,0,0,0},
+    {0,0,0,0},
+    {1,1,1,1},
+    {0,0,0,0}
+  },
+  {
+    {0,1,0,0},
+    {0,1,0,0},
+    {0,1,0,0},
+    {0,1,0,0}
+  },
+  {
+    {0,0,0,0},
+    {1,1,1,1},
+    {0,0,0,0},
+    {0,0,0,0}
+  },
+  {
+    {0,0,1,0},
+    {0,0,1,0},
+    {0,0,1,0},
+    {0,0,1,0}
+  }
 },
-{
-  {0,1,0,0},
-  {0,1,0,0},
-  {0,1,0,0},
-  {0,1,0,0}
+{ // tblock([1])
+  {  
+    {0,2,0},
+    {2,2,2},
+    {0,0,0}
+  },
+  {
+    {0,2,0},
+    {0,2,2},
+    {0,2,0}
+  },
+  {
+    {0,0,0},
+    {2,2,2},
+    {0,2,0}
+  },
+  {
+    {0,2,0},
+    {2,2,0},
+    {0,2,0}
+  }
 },
-{
-  {0,0,0,0},
-  {1,1,1,1},
-  {0,0,0,0},
-  {0,0,0,0}
+{ // zblock([2])
+  {  
+    {3,3,0},
+    {0,3,3},
+    {0,0,0}
+  },
+  {
+    {0,3,0},
+    {3,3,0},
+    {3,0,0}
+  },
+  {
+    {0,0,0},
+    {3,3,0},
+    {0,3,3}
+  },
+  {
+    {0,0,3},
+    {0,3,3},
+    {0,3,0}
+  }
 },
-{
-  {0,0,1,0},
-  {0,0,1,0},
-  {0,0,1,0},
-  {0,0,1,0}
-}
-};
-
-char tblock[4][3][3] = {
-{  
-  {0,2,0},
-  {2,2,2},
-  {0,0,0}
+{ // sblock([3])
+  {  
+    {0,4,4},
+    {4,4,0},
+    {0,0,0}
+  },
+  {
+    {0,4,0},
+    {0,4,4},
+    {0,0,4}
+  },
+  {
+    {0,0,0},
+    {0,4,4},
+    {4,4,0},
+  },
+  {
+    {4,0,0},
+    {4,4,0},
+    {0,4,0}
+  }
 },
-{
-  {0,2,0},
-  {0,2,2},
-  {0,2,0}
+{ // jblock([4])
+  {  
+    {5,0,0},
+    {5,5,5},
+    {0,0,0}
+  },
+  {
+    {0,5,5},
+    {0,5,0},
+    {0,5,0}
+  },
+  {
+    {0,0,0},
+    {5,5,5},
+    {0,0,5}
+  },
+  {
+    {0,5,0},
+    {0,5,0},
+    {5,5,0}
+  }
 },
-{
-  {0,0,0},
-  {2,2,2},
-  {0,2,0}
+{ // lblock([5])
+  {  
+    {0,0,6},
+    {6,6,6},
+    {0,0,0}
+  },
+  {
+    {0,6,0},
+    {0,6,0},
+    {0,6,6}
+  },
+  {
+    {0,0,0},
+    {6,6,6},
+    {6,0,0}
+  },
+  {
+    {6,6,0},
+    {0,6,0},
+    {0,6,0}
+  }
 },
-{
-  {0,2,0},
-  {2,2,0},
-  {0,2,0}
-}
-};
-
-char zblock[4][3][3] = {
-{  
-  {3,3,0},
-  {0,3,3},
-  {0,0,0}
-},
-{
-  {0,3,0},
-  {3,3,0},
-  {3,0,0}
-},
-{
-  {0,0,0},
-  {3,3,0},
-  {0,3,3}
-},
-{
-  {0,0,3},
-  {0,3,3},
-  {0,3,0}
-}
-};
-
-char sblock[4][3][3] = {
-{  
-  {0,4,4},
-  {4,4,0},
-  {0,0,0}
-},
-{
-  {0,4,0},
-  {0,4,4},
-  {0,0,4}
-},
-{
-  {0,0,0},
-  {0,4,4},
-  {4,4,0},
-},
-{
-  {4,0,0},
-  {4,4,0},
-  {0,4,0}
-}
-};
-
-char jblock[4][3][3] = {
-{  
-  {5,0,0},
-  {5,5,5},
-  {0,0,0}
-},
-{
-  {0,5,5},
-  {0,5,0},
-  {0,5,0}
-},
-{
-  {0,0,0},
-  {5,5,5},
-  {0,0,5}
-},
-{
-  {0,5,0},
-  {0,5,0},
-  {5,5,0}
-}
-};
-
-char lblock[4][3][3] = {
-{  
-  {0,0,6},
-  {6,6,6},
-  {0,0,0}
-},
-{
-  {0,6,0},
-  {0,6,0},
-  {0,6,6}
-},
-{
-  {0,0,0},
-  {6,6,6},
-  {6,0,0}
-},
-{
-  {6,6,0},
-  {0,6,0},
-  {0,6,0}
-}
-};
-
-char oblock[4][3][3] = {
-{
-  {7,7,0},
-  {7,7,0},
-  {0,0,0}
-},
-{
-  {0,7,7},
-  {0,7,7},
-  {0,0,0}
-},
-{
-  {0,0,0},
-  {0,7,7},
-  {0,7,7}
-},
-{  
-  {0,0,0},
-  {7,7,0},
-  {7,7,0}
+{ // oblock([6])
+  {
+    {7,7,0},
+    {7,7,0},
+    {0,0,0}
+  },
+  {
+    {0,7,7},
+    {0,7,7},
+    {0,0,0}
+  },
+  {
+    {0,0,0},
+    {0,7,7},
+    {0,7,7}
+  },
+  {  
+    {0,0,0},
+    {7,7,0},
+    {7,7,0}
+  }
 }
 };
 
@@ -204,6 +201,12 @@ void initializations(void)
   TSCR2 = 0x0C; // set appropriate pre-scale factor and enable counter reset after OC7
   TC7   = 15000;// set up channel 7 to generate 100 ms interrupt rate
   TIE   = 0x80; // enable TIM Ch 7 interrupts
+  
+  /* Initialize SPI for baud rate of 6 Mbs */
+  DDRM   = 0xFF;
+  SPICR1 = 0x50;
+  SPICR2 = 0x00;
+  SPIBR  = 0x01;
   
   //initialize gameboard
   for (y = 0;y < NUMROWS;y++)
@@ -283,9 +286,10 @@ void clockdisp(void)
 void updatedisp(void) // update LED data
 {
   // start frame
-  PTT_PTT1 = 0;
-  for (i=0;i<32;i++)
-    clockdisp();
+  shiftout(0x00);
+  shiftout(0x00);
+  shiftout(0x00);
+  shiftout(0x00);
   
   for (x = 0;x < NUMCOLS; x++)
     for (y = 0;y < (NUMROWS - 3); y++)
@@ -329,71 +333,26 @@ void updatedisp(void) // update LED data
                 blue = 255;
       }
       
-      // header frame (brightness)
-      PTT_PTT1 = 1;
-      for (i=0;i<8;i++)
-        clockdisp();
+       // LED frame
+      shiftout(0xFF); // brightness
+      shiftout(blue); // blue
+      shiftout(green);// green
+      shiftout(red);  // red
       
-      //LED frame
-      PTT_PTT1 = blue & %00000001;
-      clockdisp();
-      PTT_PTT1 = blue & %00000010;
-      clockdisp();
-      PTT_PTT1 = blue & %00000100;
-      clockdisp();
-      PTT_PTT1 = blue & %00001000;
-      clockdisp();
-      PTT_PTT1 = blue & %00010000;
-      clockdisp();
-      PTT_PTT1 = blue & %00100000;
-      clockdisp();
-      PTT_PTT1 = blue & %01000000;
-      clockdisp();
-      PTT_PTT1 = blue & %10000000;
-      clockdisp();
-      
-      PTT_PTT1 = green & %00000001;
-      clockdisp();
-      PTT_PTT1 = green & %00000010;
-      clockdisp();
-      PTT_PTT1 = green & %00000100;
-      clockdisp();
-      PTT_PTT1 = green & %00001000;
-      clockdisp();
-      PTT_PTT1 = green & %00010000;
-      clockdisp();
-      PTT_PTT1 = green & %00100000;
-      clockdisp();
-      PTT_PTT1 = green & %01000000;
-      clockdisp();
-      PTT_PTT1 = green & %10000000;
-      clockdisp();
-      
-      PTT_PTT1 = red & %00000001;
-      clockdisp();
-      PTT_PTT1 = red & %00000010;
-      clockdisp();
-      PTT_PTT1 = red & %00000100;
-      clockdisp();
-      PTT_PTT1 = red & %00001000;
-      clockdisp();
-      PTT_PTT1 = red & %00010000;
-      clockdisp();
-      PTT_PTT1 = red & %00100000;
-      clockdisp();
-      PTT_PTT1 = red & %01000000;
-      clockdisp();
-      PTT_PTT1 = red & %10000000;
-      clockdisp();
       
     }
     
     // end frame for 200 LEDs
-    PTT_PTT1 = 0;
-    for (j=0;j<13;j++)
-      for (i=0;i<8;i++)
-        clockdisp();
+    for (i=0;i<13;i++) shiftout(0x00);
 
+}
+
+void updatecurrentpiece(char dx)  // derpy update routine
+{
+  for (z=0;z<4;z++)
+    for (y=0;y<4;y++)
+      for (x=0;x<4;x++)
+        currentpiece[z][y][x] = block[n][dx][y][x];
 }
 
 void main(void) {
@@ -413,23 +372,8 @@ void main(void) {
         roundover = 0;
         score += 10 * (level+1);
         
-        n = (char)(rand() % (NUMPIECES-1)); // set new piece as currentpiece
-        switch (n)
-        {
-          case 0:  block = iblock;
-          break;
-          case 1:  block = tblock;
-          break;
-          case 2:  block = zblock;
-          break;
-          case 3:  block = sblock;
-          break;
-          case 4:  block = jblock;
-          break;
-          case 5:  block = lblock;
-          break;
-          case 6:  block = oblock;
-        }
+        n = (char)(rand() % (NUMPIECES)); // set new piece as currentpiece
+        updatecurrentpiece(0);
         
         // reset row and col for new piece
         row = NUMROWS - 4;
@@ -484,19 +428,19 @@ void main(void) {
     else if (a) // clockwise
     {
       rot = (char)(++rot % 4);  //update current piece
-      currentpiece = block[rot];
+      updatecurrentpiece(rot);
       if (checkcollision()) //undo update
       {
         rot = (char)(--rot % 4);
-        currentpiece = block[rot];
+        updatecurrentpiece(rot);
       }
       else
       {
         rot = (char)(--rot % 4);
-        currentpiece = block[rot];
+        updatecurrentpiece(rot);
         clearpiece();
         rot = (char)(++rot % 4);
-        currentpiece = block[rot];
+        updatecurrentpiece(rot);
         setpiece();
       }
     }
@@ -504,11 +448,11 @@ void main(void) {
     {
       clearpiece();
       rot = (char)(--rot % 4);  //update current piece
-      currentpiece = block[rot];
+      updatecurrentpiece(rot);
       if (checkcollision()) //undo update
       {
         rot = (char)(++rot % 4);
-        currentpiece = block[rot];
+        updatecurrentpiece(rot);
       }
       setpiece();
     }
@@ -561,4 +505,21 @@ interrupt 15 void TIM_ISR(void)
  	  tick = 1;
  	}
  	
+}
+
+/***********************************************************************
+  shiftout: Transmits the character x to external shift 
+            register using the SPI.  It should shift MSB first.  
+             
+            MOSI = PM[4]
+            SCK  = PM[5]
+***********************************************************************/
+
+void shiftout(char x)
+
+{
+  while(!SPISR_SPTEF) {}// read the SPTEF bit, continue if bit is 1
+  SPIDR = x;            // write data to SPI data register
+  //lcdwait();            // wait for (at least <>) 30 cycles for SPI data to shift out  
+  
 }
