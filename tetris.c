@@ -13,17 +13,15 @@ void shiftout(char x);
 
 char x, y, z, size, rot;
 char row, col;
-char emptyrow;
+char n, i;
 
 char tick, timcnt, level;
 char roundover, gameover;
 
 char up, down, left, right, a, b;
-
-char n, i;
-
 unsigned char red, green, blue; // RGB values (0-255)
 
+char emptyrow;
 char rclear[4] = {0,0,0,0};  // rows to clear
 
 char gameboard[NUMROWS][NUMCOLS];
@@ -226,13 +224,9 @@ int checkcollision(void)
   int collision = 0;
   
   for (y = 0; y < size; y++)
-  {
     for (x = 0; x < size; x++)
-    {
       if (currentpiece[size - 1 - y][x])
         if ((col + x < 0) || (col + x > 9) || (row + y < 0) || (gameboard[row + y][col + x])) collision = 1;
-    }
-  }
     
   return collision;
 }
@@ -251,27 +245,105 @@ void setpiece(void)
       if (currentpiece[size - 1 - y][x]) gameboard[row + y][col + x] = 1;
 }
 
-void flashrows(void)
+void updatecurrentpiece(char dx)  // derpy update routine
 {
-  // flashing effect for clear rows
+  for (z = 0;z < 4;z++)
+    for (y = 0;y < 4;y++)
+      for (x = 0;x < 4;x++)
+        currentpiece[z][y][x] = block[n][dx][y][x];
+}
+
+void flashrows(void)  // flashing effect for clear rows
+{
+  for (z = 0; z < 4; z++)
+  { 
+    updatedisp();
+    
+    // start frame
+    shiftout(0x00);
+    shiftout(0x00);
+    shiftout(0x00);
+    shiftout(0x00);
+    
+    for (x = 0;x < NUMCOLS; x++)
+      for (y = 0;y < (NUMROWS - 3); y++)
+      {
+        if (y = rclear[i])
+        {
+          red = 255;    // white
+          green = 255;
+          blue = 255;
+        }
+        else
+        switch (gameboard[y][x])
+        {
+          case 0: red = 0;    // blank
+                  green = 0;
+                  blue = 0;
+                  break;
+          case 1: red = 0;    // cyan (i-block)
+                  green = 240;
+                  blue = 240;
+                  break;
+          case 2: red = 161;  // purple (t-block)
+                  green = 0;
+                  blue = 240;
+                  break;
+          case 3: red = 255;  // red (z-block)
+                  green = 0;
+                  blue = 0;
+                  break;
+          case 4: red = 0;    // green (s-block)
+                  green = 255;
+                  blue = 0;
+                  break;
+          case 5: red = 0;    // blue (j-block)
+                  green = 0;
+                  blue = 255;
+                  break;
+          case 6: red = 240;  // orange (l-block)
+                  green = 161;
+                  blue = 0;
+                  break;
+          case 7: red = 240;  // yellow (o-block)
+                  green = 240;
+                  blue = 0;
+                  break;
+          default:red = 255;  // white by default (it's not a racial thing)
+                  green = 255;
+                  blue = 255;
+        }
+        
+        // LED frame
+        shiftout(0xFF); // brightness
+        shiftout(blue); // blue
+        shiftout(green);// green
+        shiftout(red);  // red      
+      }
+      
+    // end frame for 200 LEDs
+    for (i=0;i<13;i++) shiftout(0x00);
+    
+    // add delay
+  }
 }
 
 void clearrows(void)
 {
   i = 0;
   row = rclear[i];
-  while (!emptyrow && (i < 4))
+  while (!emptyrow)  // move only active part of gameboard
   {
     emptyrow = 1;
-    while (row == rclear[i])
+    while (row == rclear[i])  // skip other rows to clear
     {
       row++;
       i++;
     }
-    for (x = 0; x < size; x++)
+    for (x = 0; x < NUMCOLS; x++)  // move the gameboard cells down across the row
     {
-      gameboard[row-(i+1)][col + x] = gameboard[row][col + x];
-      if (gameboard[row][col + x]) emptyrow = 0;
+      gameboard[row-i)][col + x] = gameboard[row][col + x];
+      if (gameboard[row][col + x]) emptyrow = 0;  // stop at top of active gameboard
     }
     row++;
   }
@@ -327,7 +399,7 @@ void updatedisp(void) // update LED data
                 blue = 255;
       }
       
-       // LED frame
+      // LED frame
       shiftout(0xFF); // brightness
       shiftout(blue); // blue
       shiftout(green);// green
@@ -337,14 +409,6 @@ void updatedisp(void) // update LED data
     // end frame for 200 LEDs
     for (i=0;i<13;i++) shiftout(0x00);
 
-}
-
-void updatecurrentpiece(char dx)  // derpy update routine
-{
-  for (z=0;z<4;z++)
-    for (y=0;y<4;y++)
-      for (x=0;x<4;x++)
-        currentpiece[z][y][x] = block[n][dx][y][x];
 }
 
 void main(void) {
