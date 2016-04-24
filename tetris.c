@@ -12,7 +12,7 @@
 void shiftout(char x);
 
 char x, y, z, size, rot;
-char row, col;
+char row, col, emptyrow;
 char n, i;
 
 char tick, timcnt, level;
@@ -21,7 +21,7 @@ char roundover, gameover;
 char up, down, left, right, a, b;
 unsigned char red, green, blue; // RGB values (0-255)
 
-char emptyrow;
+char flash;
 char rclear[4] = {0,0,0,0};  // rows to clear
 
 char gameboard[NUMROWS][NUMCOLS];
@@ -216,6 +216,7 @@ void initializations(void)
   level = 0;
   tick = 0;
   timcnt = 0;
+  flash = 0;
   
 }
 
@@ -258,71 +259,9 @@ void flashrows(void)  // flashing effect for clear rows
   for (z = 0; z < 4; z++)
   { 
     updatedisp();
-    
-    // start frame
-    shiftout(0x00);
-    shiftout(0x00);
-    shiftout(0x00);
-    shiftout(0x00);
-    
-    for (x = 0;x < NUMCOLS; x++)
-      for (y = 0;y < (NUMROWS - 3); y++)
-      {
-        if (y = rclear[i])
-        {
-          red = 255;    // white
-          green = 255;
-          blue = 255;
-        }
-        else
-        switch (gameboard[y][x])
-        {
-          case 0: red = 0;    // blank
-                  green = 0;
-                  blue = 0;
-                  break;
-          case 1: red = 0;    // cyan (i-block)
-                  green = 240;
-                  blue = 240;
-                  break;
-          case 2: red = 161;  // purple (t-block)
-                  green = 0;
-                  blue = 240;
-                  break;
-          case 3: red = 255;  // red (z-block)
-                  green = 0;
-                  blue = 0;
-                  break;
-          case 4: red = 0;    // green (s-block)
-                  green = 255;
-                  blue = 0;
-                  break;
-          case 5: red = 0;    // blue (j-block)
-                  green = 0;
-                  blue = 255;
-                  break;
-          case 6: red = 240;  // orange (l-block)
-                  green = 161;
-                  blue = 0;
-                  break;
-          case 7: red = 240;  // yellow (o-block)
-                  green = 240;
-                  blue = 0;
-                  break;
-          default:red = 255;  // white by default (it's not a racial thing)
-                  green = 255;
-                  blue = 255;
-        }
-        
-        // LED frame
-        shiftout(0xFF); // brightness
-        shiftout(blue); // blue
-        shiftout(green);// green
-        shiftout(red);  // red      
-      }
-      
-    // end frame for 200 LEDs
-    for (i=0;i<13;i++) shiftout(0x00);
+    flash = 1;
+    updatedisp();
+    flash = 0;
     
     // add delay
   }
@@ -360,6 +299,13 @@ void updatedisp(void) // update LED data
   for (x = 0;x < NUMCOLS; x++)
     for (y = 0;y < (NUMROWS - 3); y++)
     {
+      if (y = rclear[] && flash)
+      {
+        red = 255;    // white
+        green = 255;
+        blue = 255;
+      }
+      else    
       switch (gameboard[y][x])
       {
         case 0: red = 0;    // blank
@@ -406,9 +352,8 @@ void updatedisp(void) // update LED data
       shiftout(red);  // red      
     }
     
-    // end frame for 200 LEDs
-    for (i=0;i<13;i++) shiftout(0x00);
-
+  // end frame for 200 LEDs
+  for (i=0;i<13;i++) shiftout(0x00);
 }
 
 void main(void) {
