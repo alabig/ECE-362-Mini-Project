@@ -277,12 +277,6 @@ void clearrows(void)
   }
 }
 
-void clockdisp(void)
-{
-  PTT_PTT0 = 1;
-  PTT_PTT0 = 0;
-}
-
 void updatedisp(void) // update LED data
 {
   // start frame
@@ -337,9 +331,7 @@ void updatedisp(void) // update LED data
       shiftout(0xFF); // brightness
       shiftout(blue); // blue
       shiftout(green);// green
-      shiftout(red);  // red
-      
-      
+      shiftout(red);  // red      
     }
     
     // end frame for 200 LEDs
@@ -427,6 +419,7 @@ void main(void) {
     }
     else if (a) // clockwise
     {
+      clearpiece();
       rot = (char)(++rot % 4);  //update current piece
       updatecurrentpiece(rot);
       if (checkcollision()) //undo update
@@ -434,15 +427,7 @@ void main(void) {
         rot = (char)(--rot % 4);
         updatecurrentpiece(rot);
       }
-      else
-      {
-        rot = (char)(--rot % 4);
-        updatecurrentpiece(rot);
-        clearpiece();
-        rot = (char)(++rot % 4);
-        updatecurrentpiece(rot);
-        setpiece();
-      }
+      setpiece();
     }
     else if (b) // counterclockwise
     {
