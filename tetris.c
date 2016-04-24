@@ -254,40 +254,6 @@ void updatecurrentpiece(char dx)  // derpy update routine
         currentpiece[z][y][x] = block[n][dx][y][x];
 }
 
-void flashrows(void)  // flashing effect for clear rows
-{
-  for (z = 0; z < 4; z++)
-  { 
-    updatedisp();
-    flash = 1;
-    updatedisp();
-    flash = 0;
-    
-    // add delay
-  }
-}
-
-void clearrows(void)
-{
-  i = 0;
-  row = rclear[i];
-  while (!emptyrow)  // move only active part of gameboard
-  {
-    emptyrow = 1;
-    while (row == rclear[i])  // skip other rows to clear
-    {
-      row++;
-      i++;
-    }
-    for (x = 0; x < NUMCOLS; x++)  // move the gameboard cells down across the row
-    {
-      gameboard[row-i)][col + x] = gameboard[row][col + x];
-      if (gameboard[row][col + x]) emptyrow = 0;  // stop at top of active gameboard
-    }
-    row++;
-  }
-}
-
 void updatedisp(void) // update LED data
 {
   // start frame
@@ -299,7 +265,7 @@ void updatedisp(void) // update LED data
   for (x = 0;x < NUMCOLS; x++)
     for (y = 0;y < (NUMROWS - 3); y++)
     {
-      if (flash && ((y = rclear[0]) || (y = rclear[1]) || (y = rclear[2]) || (y = rclear[3])))
+      if (flash && ((y == rclear[0]) || (y == rclear[1]) || (y == rclear[2]) || (y == rclear[3])))
       {
         red = 255;    // white
         green = 255;
@@ -354,6 +320,41 @@ void updatedisp(void) // update LED data
     
   // end frame for 200 LEDs
   for (i=0;i<13;i++) shiftout(0x00);
+}
+
+void flashrows(void)  // flashing effect for clear rows
+{
+  for (z = 0; z < 4; z++)
+  { 
+    updatedisp();
+    flash = 1;
+    updatedisp();
+    flash = 0;
+    
+    // add delay
+  }
+}
+
+void clearrows(void)
+{
+  i = 0;
+  row = rclear[i];
+  while (!emptyrow)  // move only active part of gameboard
+  {
+    emptyrow = 1;
+    while (row == rclear[i])  // skip other rows to clear
+    {
+      row++;
+      i++;
+    }
+    for (x = 0; x < NUMCOLS; x++)  // move the gameboard cells down across the row
+    {
+      gameboard[row-i][col + x] = gameboard[row][col + x];
+      if (gameboard[row][col + x]) emptyrow = 0;  // stop at top of active gameboard
+    }
+    row++;
+  }
+  while (--i > 0) gameboard[row-i][col + x] = 0;  // fill in any gap
 }
 
 void main(void) {
