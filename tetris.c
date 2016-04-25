@@ -18,11 +18,13 @@ char n, i;
 char tick, timcnt, level;
 char roundover, gameover;
 
-char up, down, left, right, a, b;
+char prevup, prevdown, prevleft, prevright, preva, prevb, prevsel, prevstart;
+char up, down, left, right, a, b, sel, start;
 unsigned char red, green, blue; // RGB values (0-255)
 
 char flash;
-char rclear[4] = {0,0,0,0};  // rows to clear
+char rclear[4] = {-1,-1,-1,-1};  // rows to clear
+char numrclear;
 
 char gameboard[NUMROWS][NUMCOLS];
 char currentpiece[4][4][4];
@@ -192,6 +194,32 @@ char block[7][4][4][4] = {
 
 void initializations(void)
 {
+  // Set the PLL speed (bus clock = 24 MHz)
+  CLKSEL = CLKSEL & 0x80; // disengage PLL from system
+  PLLCTL = PLLCTL | 0x40; // turn on PLL
+  SYNR = 0x02;            // set PLL multiplier
+  REFDV = 0;              // set PLL divider
+  while (!(CRGFLG & 0x08)){  }
+  CLKSEL = CLKSEL | 0x80; // engage PLL
+  
+  // Disable watchdog timer (COPCTL register)
+  COPCTL = 0x40;    //COP off - RTI and COP stopped in BDM-mode
+  
+  
+  //  Initialize digital inputs
+	DDRAD = 0; 		//program port AD for input mode
+  ATDDIEN = 0x01; //program PAD0 as digital input from NES controller
+  
+  //  Add RTI/interrupt initializations here
+  CRGINT = 0x80;
+  RTICTL = 0x71;  // approx 60Hz
+  
+  //  Add additional port pin initializations here  (e.g., Other DDRs, Ports) 
+  
+  //  NES controller
+  DDRT = 0xFF;  // program port T for output mode
+  PTT_PTT0 = 0; // pulse signal
+  PTT_PTT1 = 0; // latch signal
   
   /* Initialize TIM Ch 7 (TC7) for periodic interrupts every 100 ms */
   TSCR1 = 0x80; // enable timer subsystem
@@ -319,7 +347,7 @@ void updatedisp(void) // update LED data
     }
     
   // end frame for 200 LEDs
-  for (i=0;i<13;i++) shiftout(0x00);
+  for (i = 0; i < 13; i++) shiftout(0x00);
 }
 
 void flashrows(void)  // flashing effect for clear rows
@@ -357,6 +385,11 @@ void clearrows(void)
   while (--i > 0) gameboard[row-i][col + x] = 0;  // fill in any gap
 }
 
+void checkrclear(void)
+{
+  // check gameboard for full rows
+}
+
 void main(void) {
   /* put your own code here */
  	EnableInterrupts;
@@ -371,8 +404,25 @@ void main(void) {
       
       if (roundover)
       {
-        roundover = 0;
+        roundover = 0;        
         score += 10 * (level+1);
+        
+        checkrclear();
+        if (numrclear)
+        {
+          if (numrclear == TETRIS)
+            if (clearchain)
+            {
+              clearchain = 0;
+              score += 1200;
+            }
+            else score += 800;
+          else score += 100 * numrclear;
+          
+          flashrows();
+          clearrows();
+          numrclear = 0;
+        }
         
         n = (char)(rand() % (NUMPIECES)); // set new piece as currentpiece
         updatecurrentpiece(0);
@@ -405,6 +455,7 @@ void main(void) {
     
     if (left)
     {
+      left = 0;
       col--;
       if (checkcollision()) col++;
       else
@@ -417,6 +468,7 @@ void main(void) {
     }
     else if (right)
     {
+      right = 0;
       col++;
       if (checkcollision()) col--;
       else
@@ -429,6 +481,7 @@ void main(void) {
     }
     else if (a) // clockwise
     {
+      a = 0;
       clearpiece();
       rot = (char)(++rot % 4);  //update current piece
       updatecurrentpiece(rot);
@@ -441,6 +494,7 @@ void main(void) {
     }
     else if (b) // counterclockwise
     {
+      b = 0;
       clearpiece();
       rot = (char)(--rot % 4);  //update current piece
       updatecurrentpiece(rot);
@@ -453,6 +507,7 @@ void main(void) {
     }
     else if (down)
     {
+      down = 0;
       row--;
       if (checkcollision())
       {
@@ -469,6 +524,7 @@ void main(void) {
     }
     else if (up)  // drop piece
     {
+      up = 0;
       clearpiece();
       do row--;
       while (!checkcollision());
@@ -502,6 +558,93 @@ interrupt 15 void TIM_ISR(void)
  	
 }
 
+// ***********************************************************************                       
+// RTI interrupt service routine: rti_isr
+// ***********************************************************************                       
+ 
+interrupt 7 void RTI_ISR( void)
+{
+  CRGFLG = CRGFLG | 0x80; // set CRGFLG bit to clear RTI device flag
+
+	PTT_PTT1 = 1; // latch data
+	PTT_PTT1 = 0;
+	
+	if (!PORTAD0_PTAD0)	// get a
+	  if (preva) a = 1;
+	preva = PORTAD0_PTAD0;
+		
+	PTT_PTT0 = 1; // send pulse
+	PTT_PTT0 = 0;
+	
+	if (!PORTAD0_PTAD0)	// get b
+	  if (prevb) b = 1;
+	prevb = PORTAD0_PTAD0;
+	
+	PTT_PTT0 = 1; // send pulse
+	PTT_PTT0 = 0;
+	
+	if (!PORTAD0_PTAD0)	// get sel
+	  if (prevsel) sel = 1;
+	prevsel = PORTAD0_PTAD0;
+	
+	PTT_PTT0 = 1; // send pulse
+	PTT_PTT0 = 0;
+	
+	if (!PORTAD0_PTAD0)	// get start
+	  if (prevstart) start = 1;
+	prevstart = PORTAD0_PTAD0;
+	
+	PTT_PTT0 = 1; // send pulse
+	PTT_PTT0 = 0;
+	
+	if (!PORTAD0_PTAD0)	// get up
+	  if (prevup) up = 1;
+	prevup = PORTAD0_PTAD0;
+	
+	PTT_PTT0 = 1; // send pulse
+	PTT_PTT0 = 0;
+	
+	if (!PORTAD0_PTAD0)	// get down
+	  if (prevdown) down = 1;
+	prevdown = PORTAD0_PTAD0;
+	
+	PTT_PTT0 = 1; // send pulse
+	PTT_PTT0 = 0;
+	
+	if (!PORTAD0_PTAD0)	// get left
+	  if (prevleft) left = 1;
+	prevleft = PORTAD0_PTAD0;
+	
+	PTT_PTT0 = 1; // send pulse
+	PTT_PTT0 = 0;
+	
+	if (!PORTAD0_PTAD0)	// get right
+	  if (prevright) right = 1;
+	prevright = PORTAD0_PTAD0;
+}
+
+/*
+***********************************************************************
+  lcdwait: Delay for approx 2 ms
+***********************************************************************
+*/
+void lcdwait()
+{
+  int m = 8;
+  int n = 6000;
+  while(m > 0)
+  {
+    while(n > 0)
+    {
+      n--;
+      asm{
+      nop;
+      }
+    }
+    m--;
+  }
+}
+
 /***********************************************************************
   shiftout: Transmits the character x to external shift 
             register using the SPI.  It should shift MSB first.  
@@ -515,6 +658,6 @@ void shiftout(char x)
 {
   while(!SPISR_SPTEF) {}// read the SPTEF bit, continue if bit is 1
   SPIDR = x;            // write data to SPI data register
-  //lcdwait();            // wait for (at least <>) 30 cycles for SPI data to shift out  
+  lcdwait();            // wait for (at least <>) 30 cycles for SPI data to shift out  
   
 }
