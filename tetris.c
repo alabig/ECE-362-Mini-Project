@@ -8,11 +8,12 @@
 #define NUMCOLS 10
 
 #define NUMPIECES 7
+#define SIZE 4
 
 void shiftout(char x);
 
-char x, y, z, size, rot;
-char row, col, emptyrow;
+char x, y, z, rot;
+char row, col, emptyrow, fullrow;
 char n, i;
 
 char tick, timcnt, level;
@@ -24,7 +25,7 @@ unsigned char red, green, blue; // RGB values (0-255)
 
 char flash;
 char rclear[4] = {-1,-1,-1,-1};  // rows to clear
-char numrclear, clearchain;
+char numrclear, tchain;
 
 char gameboard[NUMROWS][NUMCOLS];
 char currentpiece[4][4][4];
@@ -238,23 +239,46 @@ void initializations(void)
   for (y = 0;y < NUMROWS;y++)
     for (x = 0;x < NUMCOLS;x++) gameboard[y][x] = 0;
     
-  // other initializations
+  // global initializations
+  rot = 0;
   roundover = 1;
-  gameover = 0;
-  level = 0;
+  emptyrow = 0;
+  fullrow = 0;
   tick = 0;
   timcnt = 0;
+  level = 0;
+  gameover = 0;
+  prevup = 1;
+  prevdown = 1;
+  prevleft = 1;
+  prevright = 1;
+  preva = 1;
+  prevb = 1;
+  prevsel = 1;
+  prevstart = 1;
+  up = 0;
+  down = 0;
+  left = 0;
+  right = 0;
+  a = 0;
+  b = 0;
+  sel = 0;
+  start = 0;
   flash = 0;
+  numrclear = 0;
+  tchain = 0;
+  score = 0;
   
+  // load highscore  
 }
 
 int checkcollision(void)
 {
   int collision = 0;
   
-  for (y = 0; y < size; y++)
-    for (x = 0; x < size; x++)
-      if (currentpiece[size - 1 - y][x])
+  for (y = 0; y < SIZE; y++)
+    for (x = 0; x < SIZE; x++)
+      if (currentpiece[SIZE - 1 - y][x])
         if ((col + x < 0) || (col + x > 9) || (row + y < 0) || (gameboard[row + y][col + x])) collision = 1;
     
   return collision;
@@ -262,16 +286,16 @@ int checkcollision(void)
 
 void clearpiece(void)
 {
-  for (y = 0; y < size; y++)
-    for (x = 0; x < size; x++)
-      if (currentpiece[size - 1 - y][x]) gameboard[row + y][col + x] = 0;
+  for (y = 0; y < SIZE; y++)
+    for (x = 0; x < SIZE; x++)
+      if (currentpiece[SIZE - 1 - y][x]) gameboard[row + y][col + x] = 0;
 }
 
 void setpiece(void)
 {
-  for (y = 0; y < size; y++)
-    for (x = 0; x < size; x++)
-      if (currentpiece[size - 1 - y][x]) gameboard[row + y][col + x] = 1;
+  for (y = 0; y < SIZE; y++)
+    for (x = 0; x < SIZE; x++)
+      if (currentpiece[SIZE - 1 - y][x]) gameboard[row + y][col + x] = 1;
 }
 
 void updatecurrentpiece(char dx)  // derpy update routine
@@ -387,7 +411,16 @@ void clearrows(void)
 
 void checkrclear(void)
 {
-  // check gameboard for full rows
+  for (y = 0, i = 0; y < SIZE; y++) // check for full rows
+  {
+    fullrow = 1;
+    if ((row + y) >= 0)
+    { 
+      for (x = 0; x < NUMCOLS; x++)
+        if (gameboard[row + y][x] == 0) fullrow = 0;
+      if (fullrow) rclear[i++] = row + y;
+    }
+  }
 }
 
 void main(void) {
@@ -412,14 +445,19 @@ void main(void) {
         {
           if (numrclear == TETRIS)
           {
-            if (clearchain) score += 1200;
+            if (tchain) score += 1200;
             else score += 800;
-            clearchain = 1;
+            tchain = 1;
           }
-          else score += 100 * numrclear;
+          else
+          { 
+            score += 100 * numrclear;
+            tchain = 0;
+          }
           
           flashrows();
           clearrows();
+          for (i = 0; i < SIZE; i++) rclear[i] = -1;
           numrclear = 0;
         }
         
