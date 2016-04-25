@@ -24,7 +24,7 @@ unsigned char red, green, blue; // RGB values (0-255)
 
 char flash;
 char rclear[4] = {-1,-1,-1,-1};  // rows to clear
-char numrclear;
+char numrclear, clearchain;
 
 char gameboard[NUMROWS][NUMCOLS];
 char currentpiece[4][4][4];
@@ -411,12 +411,11 @@ void main(void) {
         if (numrclear)
         {
           if (numrclear == TETRIS)
-            if (clearchain)
-            {
-              clearchain = 0;
-              score += 1200;
-            }
+          {
+            if (clearchain) score += 1200;
             else score += 800;
+            clearchain = 1;
+          }
           else score += 100 * numrclear;
           
           flashrows();
