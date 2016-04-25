@@ -411,6 +411,7 @@ void clearrows(void)
 
 void checkrclear(void)
 {
+  numrclear = 0;
   for (y = 0, i = 0; y < SIZE; y++) // check for full rows
   {
     fullrow = 1;
@@ -418,7 +419,11 @@ void checkrclear(void)
     { 
       for (x = 0; x < NUMCOLS; x++)
         if (gameboard[row + y][x] == 0) fullrow = 0;
-      if (fullrow) rclear[i++] = row + y;
+      if (fullrow)
+      {
+        rclear[i++] = row + y;
+        numrclear++;
+      }
     }
   }
 }
