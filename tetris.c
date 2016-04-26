@@ -295,7 +295,7 @@ void setpiece(void)
 {
   for (y = 0; y < SIZE; y++)
     for (x = 0; x < SIZE; x++)
-      if (currentpiece[SIZE - 1 - y][x]) gameboard[row + y][col + x] = 1;
+      if (currentpiece[SIZE - 1 - y][x]) gameboard[row + y][col + x] = currentpiece[SIZE - 1 - y][x];
 }
 
 void updatecurrentpiece(char dx)  // derpy update routine
