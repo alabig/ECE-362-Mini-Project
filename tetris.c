@@ -28,7 +28,7 @@ char rclear[4] = {-1,-1,-1,-1};  // rows to clear
 char numrclear, tchain;
 
 char gameboard[NUMROWS][NUMCOLS];
-char currentpiece[4][4][4];
+char currentpiece[4][4];
 
 int score, highscore;
 
@@ -300,10 +300,10 @@ void setpiece(void)
 
 void updatecurrentpiece(char dx)  // derpy update routine
 {
-  for (z = 0;z < 4;z++)
+  //for (z = 0;z < 4;z++)
     for (y = 0;y < 4;y++)
       for (x = 0;x < 4;x++)
-        currentpiece[z][y][x] = block[n][dx][y][x];
+        currentpiece[y][x] = block[n][dx][y][x];
 }
 
 void updatedisp(void) // update LED data
@@ -478,17 +478,16 @@ void main(void) {
       }
       else
       {
+        clearpiece();
         row--;
         if (checkcollision())
         {
           row++;
+          setpiece();
           roundover = 1;
         }
         else
         {
-          row++;
-          clearpiece();
-          row--;
           setpiece();
           updatedisp();
         }
@@ -498,28 +497,26 @@ void main(void) {
     if (left)
     {
       left = 0;
+      clearpiece();
       col--;
-      if (checkcollision()) col++;
-      else
+      if (checkcollision())
       {
         col++;
-        clearpiece();
-        col--;
         setpiece();
       }
+      else setpiece();
     }
     else if (right)
     {
       right = 0;
+      clearpiece();
       col++;
-      if (checkcollision()) col--;
-      else
+      if (checkcollision())
       {
         col--;
-        clearpiece();
-        col++;
         setpiece();
       }
+      else setpiece();
     }
     else if (a) // clockwise
     {
@@ -550,19 +547,15 @@ void main(void) {
     else if (down)
     {
       down = 0;
+      clearpiece();
       row--;
       if (checkcollision())
       {
         row++;
+        setpiece();
         roundover = 1;
       }
-      else
-      {
-        row++;
-        clearpiece();
-        row--;
-        setpiece();
-      }
+      else setpiece();
     }
     else if (up)  // drop piece
     {
