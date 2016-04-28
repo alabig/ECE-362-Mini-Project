@@ -504,7 +504,11 @@ void main(void) {
         col++;
         setpiece();
       }
-      else setpiece();
+      else
+      {
+        setpiece();
+        updatedisp();
+      }
     }
     else if (right)
     {
@@ -516,7 +520,11 @@ void main(void) {
         col--;
         setpiece();
       }
-      else setpiece();
+      else
+      {
+        setpiece();
+        updatedisp();
+      }
     }
     else if (a) // clockwise
     {
@@ -530,6 +538,7 @@ void main(void) {
         updatecurrentpiece(rot);
       }
       setpiece();
+      updatedisp();
     }
     else if (b) // counterclockwise
     {
@@ -543,6 +552,7 @@ void main(void) {
         updatecurrentpiece(rot);
       }
       setpiece();
+      updatedisp();
     }
     else if (down)
     {
@@ -555,7 +565,11 @@ void main(void) {
         setpiece();
         roundover = 1;
       }
-      else setpiece();
+      else
+      {
+        setpiece();
+        updatedisp();
+      }
     }
     else if (up)  // drop piece
     {
@@ -564,8 +578,9 @@ void main(void) {
       do row--;
       while (!checkcollision());
       row++;
-      roundover = 1;
       setpiece();
+      updatedisp();
+      roundover = 1;
     }
   }
   
