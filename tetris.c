@@ -397,7 +397,7 @@ void clearrows(void)
     if (fullrow)
     {
       row = y;
-      while (row < NUMROWS)
+      while (row++ < NUMROWS)
         for (x = 0; x < NUMCOLS; x++)
           gameboard[row][x] = gameboard[row + 1][x];
     }
