@@ -13,7 +13,7 @@
 void shiftout(char x);
 
 char x, y, z, rot;
-char row, col, emptyrow, fullrow;
+char row, col, fullrow, fullrow;
 char n, i;
 
 char tick, timcnt, level;
@@ -242,7 +242,6 @@ void initializations(void)
   // global initializations
   rot = 0;
   roundover = 1;
-  emptyrow = 0;
   fullrow = 0;
   tick = 0;
   timcnt = 0;
