@@ -17,13 +17,13 @@ char row, col, fullrow, fullrow;
 char n, i;
 
 char tick, timcnt, level;
-char roundover, gameover;
+char roundover, gameover, paused;
 
 char prevup, prevdown, prevleft, prevright, preva, prevb, prevsel, prevstart;
 char up, down, left, right, a, b, sel, start;
 unsigned char red, green, blue; // RGB values (0-255)
 
-char flash;
+char flash, flashdelay;
 char rclear[5] = {-1,-1,-1,-1,-1};  // rows to clear
 char numrclear, tchain;
 
@@ -240,6 +240,7 @@ void initializations(void)
     for (x = 0;x < NUMCOLS;x++) gameboard[y][x] = 0;
     
   // global initializations
+  paused = 0;
   rot = 0;
   roundover = 1;
   fullrow = 0;
@@ -382,7 +383,8 @@ void flashrows(void)  // flashing effect for clear rows
     updatedisp();
     flash = 0;
     
-    // add delay
+    flashdelay = 1;
+    while (flashdelay) {} // flash delay
   }
 }
 
@@ -429,7 +431,7 @@ void main(void) {
   for(;;) {
 
   while (!gameover)
-  {
+  {    
     if (tick)
     {
       tick = 0;
@@ -488,93 +490,103 @@ void main(void) {
       }
     }
     
-    if (left)
+    if (!paused)
     {
-      left = 0;
-      clearpiece();
-      col--;
-      if (checkcollision())
+      
+      if (left)
       {
-        col++;
-        setpiece();
-      }
-      else
-      {
-        setpiece();
-        updatedisp();
-      }
-    }
-    else if (right)
-    {
-      right = 0;
-      clearpiece();
-      col++;
-      if (checkcollision())
-      {
+        left = 0;
+        clearpiece();
         col--;
-        setpiece();
+        if (checkcollision())
+        {
+          col++;
+          setpiece();
+        }
+        else
+        {
+          setpiece();
+          updatedisp();
+        }
       }
-      else
+      else if (right)
       {
+        right = 0;
+        clearpiece();
+        col++;
+        if (checkcollision())
+        {
+          col--;
+          setpiece();
+        }
+        else
+        {
+          setpiece();
+          updatedisp();
+        }
+      }
+      else if (a) // clockwise
+      {
+        a = 0;
+        clearpiece();
+        rot = (char)(++rot % 4);  //update current piece
+        updatecurrentpiece(rot);
+        if (checkcollision()) //undo update
+        {
+          rot = (char)(--rot % 4);
+          updatecurrentpiece(rot);
+        }
         setpiece();
         updatedisp();
       }
-    }
-    else if (a) // clockwise
-    {
-      a = 0;
-      clearpiece();
-      rot = (char)(++rot % 4);  //update current piece
-      updatecurrentpiece(rot);
-      if (checkcollision()) //undo update
+      else if (b) // counterclockwise
       {
-        rot = (char)(--rot % 4);
+        b = 0;
+        clearpiece();
+        rot = (char)(--rot % 4);  //update current piece
         updatecurrentpiece(rot);
+        if (checkcollision()) //undo update
+        {
+          rot = (char)(++rot % 4);
+          updatecurrentpiece(rot);
+        }
+        setpiece();
+        updatedisp();
       }
-      setpiece();
-      updatedisp();
-    }
-    else if (b) // counterclockwise
-    {
-      b = 0;
-      clearpiece();
-      rot = (char)(--rot % 4);  //update current piece
-      updatecurrentpiece(rot);
-      if (checkcollision()) //undo update
+      else if (down)
       {
-        rot = (char)(++rot % 4);
-        updatecurrentpiece(rot);
+        down = 0;
+        clearpiece();
+        row--;
+        if (checkcollision())
+        {
+          row++;
+          setpiece();
+          roundover = 1;
+        }
+        else
+        {
+          setpiece();
+          updatedisp();
+        }
       }
-      setpiece();
-      updatedisp();
-    }
-    else if (down)
-    {
-      down = 0;
-      clearpiece();
-      row--;
-      if (checkcollision())
+      else if (up)  // drop piece
       {
+        up = 0;
+        clearpiece();
+        do row--;
+        while (!checkcollision());
         row++;
         setpiece();
+        updatedisp();
         roundover = 1;
       }
-      else
-      {
-        setpiece();
-        updatedisp();
-      }
     }
-    else if (up)  // drop piece
+    if (start) // toggle pause
     {
-      up = 0;
-      clearpiece();
-      do row--;
-      while (!checkcollision());
-      row++;
-      setpiece();
-      updatedisp();
-      roundover = 1;
+      start = 0;
+      if (paused) paused = 0;
+      else paused = 1;
     }
   }
   
@@ -593,13 +605,16 @@ interrupt 15 void TIM_ISR(void)
 {
  	TFLG1 = TFLG1 | 0x80; // clear TIM CH 7 interrupt flag 
  	
- 	timcnt++;
- 	if (timcnt == (10 - level))
- 	{
- 	  timcnt = 0;
- 	  tick = 1;
+ 	if (!paused)
+ 	{ 	  
+   	timcnt++;
+   	if (timcnt == (10 - level))
+   	{
+   	  timcnt = 0;
+   	  tick = 1;
+   	}
+   	if (flashdelay) flashdelay = 0;
  	}
- 	
 }
 
 // ***********************************************************************                       
