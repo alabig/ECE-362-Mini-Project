@@ -314,9 +314,14 @@ void updatedisp(void) // update LED data
   shiftout(0x00);
   shiftout(0x00);
   
-  for (x = 0;x < NUMCOLS; x++)
-    for (y = 0;y < (NUMROWS - 3); y++)
-    {
+  y = -1;
+  while (x = 0;x < NUMCOLS; x++)
+  {
+    if (x % 2) y--;
+      else y++;
+      
+    for (i = 0;i < (NUMROWS - 3); i++)
+    { 
       if (flash && ((y == rclear[0]) || (y == rclear[1]) || (y == rclear[2]) || (y == rclear[3])))
       {
         red = 255;    // white
@@ -368,7 +373,11 @@ void updatedisp(void) // update LED data
       shiftout(blue); // blue
       shiftout(green);// green
       shiftout(red);  // red      
+      
+      if (x % 2) y--;
+      else y++;
     }
+  }
     
   // end frame for 200 LEDs
   for (i = 0; i < 13; i++) shiftout(0x00);
