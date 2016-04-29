@@ -393,11 +393,14 @@ void clearrows(void)
   {
     fullrow = 1;
     for (x = 0; x < NUMCOLS; x++)
-      if (gameboard[row][col + x] == 0) fullrow = 0;
+      if (gameboard[y][x] == 0) fullrow = 0;
     if (fullrow)
-      while (y < NUMROWS)
+    {
+      row = y;
+      while (row < NUMROWS)
         for (x = 0; x < NUMCOLS; x++)
-          gameboard[row][col + x] = gameboard[row + 1][col + x];
+          gameboard[row][x] = gameboard[row + 1][x];
+    }
   }
 }
 
