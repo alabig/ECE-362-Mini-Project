@@ -389,24 +389,16 @@ void flashrows(void)  // flashing effect for clear rows
 
 void clearrows(void)
 {
-  i = 0;
-  row = rclear[i];
-  while (!emptyrow)  // move only active part of gameboard
+  for (y = 0; y < NUMROWS; y++)
   {
-    emptyrow = 1;
-    while (row == rclear[i])  // skip other rows to clear
-    {
-      row++;
-      i++;
-    }
-    for (x = 0; x < NUMCOLS; x++)  // move the gameboard cells down across the row
-    {
-      gameboard[row-i][col + x] = gameboard[row][col + x];
-      if (gameboard[row][col + x]) emptyrow = 0;  // stop at top of active gameboard
-    }
-    row++;
+    fullrow = 1;
+    for (x = 0; x < NUMCOLS; x++)
+      if (gameboard[row][col + x] == 0) fullrow = 0;
+    if (fullrow)
+      while (y < NUMROWS)
+        for (x = 0; x < NUMCOLS; x++)
+          gameboard[row][col + x] = gameboard[row + 1][col + x];
   }
-  while (--i > 0) gameboard[row-i][col + x] = 0;  // fill in any gap
 }
 
 void checkrclear(void)
