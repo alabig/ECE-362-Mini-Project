@@ -314,11 +314,12 @@ void updatedisp(void) // update LED data
   shiftout(0x00);
   shiftout(0x00);
   
+  x = 0;
   y = -1;
-  while (x = 0;x < NUMCOLS; x++)
+  while (x < NUMCOLS)
   {
     if (x % 2) y--;
-      else y++;
+    else y++;
       
     for (i = 0;i < (NUMROWS - 3); i++)
     { 
@@ -377,6 +378,7 @@ void updatedisp(void) // update LED data
       if (x % 2) y--;
       else y++;
     }
+    x++;
   }
     
   // end frame for 200 LEDs
