@@ -24,7 +24,7 @@ char up, down, left, right, a, b, sel, start;
 unsigned char red, green, blue; // RGB values (0-255)
 
 char flash;
-char rclear[4] = {-1,-1,-1,-1};  // rows to clear
+char rclear[4] = {-1,-1,-1,-1,-1};  // rows to clear
 char numrclear, tchain;
 
 char gameboard[NUMROWS][NUMCOLS];
