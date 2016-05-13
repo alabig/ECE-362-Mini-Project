@@ -1,15 +1,22 @@
 #include <hidef.h>      /* common defines and macros */
 #include "derivative.h"      /* derivative-specific definitions */
 
-#define MSGLEN 32
+#define MSGLEN 512  // message buffer size
+#define DISPLEN 8   // 8 characters per display
 
 void shiftout(char x);
+void lcdwait(void);
 
 char upperchar, lowerchar;
-char i, j;
+int i, j;
 char timcnt, tick;
 char scrolldisp, wrapchar;
-char alphamsg [MSGLEN] = "TETRIS IS COMING";
+
+// message + whitespace must be at least 8 characters
+// more than 8 characters will automatically scroll
+char alphamsg [MSGLEN] = "        TETRIS IS COMING";
+//char alphamsg [MSGLEN] = "          WHEN YOU THINK ABOUT IT YOU CAN ACTUALLY SAY QUITE A LOT USING ONLY 8 DIGITS ON A VERY SMALL DISPLAY THAT JUST KEEP SCROLLING AND SCROLLING UNTIL YOU EVENTUALLY RUN OUT OF EMBEDDED MEMORY ON THE MICRO AND HAVE TO LIMIT THE NUMBER OF CHARACTERS THAT ARE INCLUDED IN THE STRING YOU WANT TO DISPLAY BUT RIGHT NOW IT JUST KEEPS GOING ONE CHARACTER AFTER ANOTHER OMG WILL IT EVER END WILL IT EVER END WILL IT EVER END WILL IT EVER END WILL IT EVER END WILL IT EVER END WILL IT EVER END WILL IT EVER END YES";
+
 char dispmsg [MSGLEN];
 
 void initializations(void)
@@ -25,15 +32,9 @@ void initializations(void)
   // Disable watchdog timer (COPCTL register)
   COPCTL = 0x40;    //COP off - RTI and COP stopped in BDM-mode
   
-  //  Initialize digital inputs
-  
-  //  Add RTI/interrupt initializations here
-    
-  //  Add additional port pin initializations here  (e.g., Other DDRs, Ports) 
-  
   //  Initialize Port T Output Pins
   DDRT = 0xFF;  // program port T for output mode
-  PTT_PTT0 = 0; // latch signal
+  PTT_PTT0 = 1; // latch signal
   
   /* Initialize TIM Ch 7 (TC7) for periodic interrupts every 100 ms */
   TSCR1 = 0x80; // enable timer subsystem
@@ -44,12 +45,15 @@ void initializations(void)
   
   /* Initialize SPI for baud rate of 6 Mbs */
   DDRM   = 0xFF;
-  SPICR1 = 0x50;
+  SPICR1 = 0x54;  // use SCLK falling edge (default, should probably make sure it won't lead to failure)
   SPICR2 = 0x00;
   SPIBR  = 0x01;
   
-  //initialize gameboard
-    
+  // wake up LCD
+  lcdwait();
+  lcdwait();
+  lcdwait();
+  
   // global initializations
   timcnt = 0;
   tick = 0;
@@ -61,7 +65,9 @@ void updatealphadisp(void) // update alpha LED display
 {
   scrolldisp = 0;
   i = 0;
-  while (dispmsg[i] && i < 16)
+  PTT_PTT0 = 0;  // open latch
+  
+  while (dispmsg[i] && i < DISPLEN)
   {  
     switch (dispmsg[i++])
     {
@@ -178,34 +184,36 @@ void updatealphadisp(void) // update alpha LED display
                 lowerchar = 0x00;
                 break;
     }
-    
-    shiftout(upperchar);
-    shiftout(lowerchar);
-  }
-    
-  PTT_PTT0 = 1; // pulse latch
-  PTT_PTT0 = 0;
   
-  if (i == 16 && dispmsg[i]) scrolldisp = 1;  // automatically scroll messages longer than 16 char
+    shiftout(upperchar);  // shift in single character
+    shiftout(lowerchar);
+    
+  }
+  
+  PTT_PTT0 = 1; // latch character data
+  
+  if (i == DISPLEN && dispmsg[i]) scrolldisp = 1;  // automatically scroll messages longer than display length
 
 }
 
 void main(void) {
   /* put your own code here */
  	EnableInterrupts;
-
-  for(;;) {
+  initializations();
   
-    for (i = 0; alphamsg[i]; i++) dispmsg[i] = alphamsg[i];
-    dispmsg[i] = '\0';
-    updatealphadisp();
+  for (i = 0; alphamsg[i]; i++) dispmsg[i] = alphamsg[i];  
+  dispmsg[i] = '\0';
+  updatealphadisp();  // initially display message
+  
+  for(;;) {
     
-    if (scrolldisp && tick)
+    if (scrolldisp && tick) // scroll left with clock
     {
       scrolldisp = 0;
       tick = 0;
       wrapchar = dispmsg[0];
-      for (i = 1; alphamsg[i]; i++) dispmsg[i-1] = dispmsg[i];
+      for (i = 1; dispmsg[i]; i++) dispmsg[i-1] = dispmsg[i];
+      i--;  // adjust for shifted end index
       dispmsg[i++] = wrapchar;
       dispmsg[i] = '\0';
       updatealphadisp();
@@ -227,7 +235,7 @@ interrupt 15 void TIM_ISR(void)
  	TFLG1 = TFLG1 | 0x80; // clear TIM CH 7 interrupt flag 
  	
  	timcnt++;
- 	if (timcnt == 5)
+ 	if (timcnt == 10)
  	{
  	  timcnt = 0;
  	  tick = 1;
@@ -269,6 +277,5 @@ void shiftout(char x)
 {
   while(!SPISR_SPTEF) {}// read the SPTEF bit, continue if bit is 1
   SPIDR = x;            // write data to SPI data register
-  lcdwait();            // wait for (at least <>) 30 cycles for SPI data to shift out  
-  
+  lcdwait();            // wait for (at least <>) 30 cycles for SPI data to shift out    
 }
